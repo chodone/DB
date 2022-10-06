@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>DETAIL</h1>
+    <hr>
+
+    <h2>{{ question.title }}</h2>
+
+    <p>Red TEAM</p>
+    <p> => {{ question.issue_a }}</p>
+
+    <p>Blue TEAM</p>
+    <p> => {{question.issue_b}} </p>
+    <hr>
+
+    <a href="{% url 'eithers:index' %}">back</a>
+
+    <hr>
+
+    <p>댓글 작성</p>
+    <p></p>
+    
+
+
+{% endblock content %}

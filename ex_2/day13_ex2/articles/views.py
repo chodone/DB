@@ -94,6 +94,7 @@ def comment_create(request, pk):
             return redirect('articles:detail', article.pk)
         
         context = {
+            'article' : article,
             'comment_form': comment_form,
         }
         return render(request, 'articles/detail.html', context)

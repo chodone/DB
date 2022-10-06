@@ -2,8 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_http_methods, require_POST, require_safe
 from django.contrib.auth.decorators import login_required
 
-from .models import Article
-from .forms import ArticleForm
+from .models import Article, Comment
+from .forms import ArticleForm, CommentForm
 
 # Create your views here.
 @require_safe
@@ -38,8 +38,12 @@ def create(request):
 @require_safe
 def detail(request, pk):
     article = get_object_or_404(Article, pk=pk)
+    comment_form = CommentForm()
+    comments = article.comment_set.all()
     context = {
         'article': article,
+        'comment_form': comment_form,
+        'comments': comments,
     }
     return render(request, 'articles/detail.html', context)
 
@@ -57,18 +61,42 @@ def delete(request, pk):
 @require_http_methods(['GET', 'POST'])
 def update(request, pk):
     article = get_object_or_404(Article, pk=pk)
+    
+    if request.user == article.author:
+        if request.method == 'POST':
+            form = ArticleForm(request.POST, instance=article)
+            if form.is_valid():
+                form.save()
+                return redirect('articles:detail', article.pk)
+        else:
+            form = ArticleForm(instance=article)
+    else:
+        return redirect('articles:index')
+    context = {
+        'article': article,
+        'form': form,
+    }
+    return render(request, 'articles/update.html', context)
+    
+@require_POST
+def comments_create(request, pk):
     if request.user.is_authenticated:
-        if request.user == article.author:
-            if request.method == 'POST':
-                form = ArticleForm(request.POST, instance=article)
-                if form.is_valid():
-                    form.save()
-                    return redirect('articles:detail', article.pk)
-            else:
-                form = ArticleForm(instance=article)
-            context = {
-                'article': article,
-                'form': form,
-            }
-        return redirect('accounts:login')
-    return redirect('accounts:login')
+        article = Article.objects.get(pk=pk)
+        comment_form = CommentForm(request.POST)
+        if comment_form.is_valid():
+            comment = comment_form.save(commit=False)
+            comment.article = article
+            comment.author = request.user
+            comment.save()
+        return redirect('articles:detail', article.pk)
+    return redirect('articles:login')
+
+def comments_delete(request, article_pk, comment_pk):
+    if request.user.is_authenticated:
+        comment = Comment.objects.get(pk=comment_pk)
+        if request.user == comment.author:
+            comment.delete()
+    return redirect('articles:detail', article_pk)
+
+    
+
