@@ -1,9 +1,10 @@
 -- DDL.sql
 
 CREATE TABLE contacts (
-  name TEXT NOT NULL,
-  age INTEGER NOT NULL,
-  email TEXT NOT NULL UNIQUE
+  room_num TEXT NOT NULL,
+  check_in TEXT NOT NULL,
+  check_out TEXT NOT NULL,
+  grade TEXT NOT NULL,
 );
 
 ALTER TABLE contacts RENAME TO new_contacts;
